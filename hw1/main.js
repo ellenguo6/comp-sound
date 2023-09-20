@@ -1,18 +1,38 @@
 var audioCtx;
 
+const imageFiles = ["image1.png", "image2.png", "image3.png"];
+
 const waveformSelect = document.getElementById("waveformSelect");
 const applyButton = document.getElementById("applyButton");
 
 const globalGainValue = 0.6;
 const epsilon = 0.001;
 
-const attackTime = 0.05;
+const attackTransition = 0.05;
+const attackTime = 0.01;
 const attackGain = 0.5;
 
-const decayDelta = 0.05;
+const decayTransition = 0.05;
 const sustainGain = 0.3;
 
-const releaseTime = 0.1;
+const releaseTransition = 0.1;
+
+function displayRandomImage() {
+  const randomIndex = Math.floor(Math.random() * imageFiles.length);
+  const randomImage = imageFiles[randomIndex];
+
+  const displayedImg = document.getElementById("displayedImg");
+  displayedImg.src = "img/" + randomImage;
+
+  const container = document.getElementById("imageContainer");
+  const maxWidth = container.clientWidth - displayedImg.width;
+  const maxHeight = container.clientHeight - displayedImg.height;
+  const randomX = Math.floor(Math.random() * maxWidth);
+  const randomY = Math.floor(Math.random() * maxHeight);
+
+  displayedImg.style.left = randomX + "px";
+  displayedImg.style.top = randomY + "px";
+}
 
 document.addEventListener("DOMContentLoaded", function (event) {
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -55,6 +75,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
   function keyDown(event) {
     const key = (event.detail || event.which).toString();
     if (keyboardFrequencyMap[key] && !activeOscillators[key]) {
+      displayRandomImage();
       playNote(key);
     }
   }
@@ -63,15 +84,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
     const key = (event.detail || event.which).toString();
     if (keyboardFrequencyMap[key] && activeOscillators[key]) {
       gainNode = gainNodes[key];
-      gainNode.gain.exponentialRampToValueAtTime(
-        epsilon,
-        audioCtx.currentTime + releaseTime
-      );
-      gainNode.gain.setTargetAtTime(
-        0,
-        audioCtx.currentTime + releaseTime,
-        epsilon
-      );
+      gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, releaseTransition);
 
       delete activeOscillators[key];
       delete gainNodes[key];
@@ -102,14 +115,15 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
     gainNode.gain.setValueAtTime(epsilon, audioCtx.currentTime);
 
-    gainNode.gain.exponentialRampToValueAtTime(
+    gainNode.gain.setTargetAtTime(
       attackGain / totalVoices,
-      audioCtx.currentTime + attackTime
+      audioCtx.currentTime,
+      attackTransition
     );
     gainNode.gain.setTargetAtTime(
       sustainGain / totalVoices,
       audioCtx.currentTime + attackTime,
-      decayDelta
+      decayTransition
     );
 
     activeOscillators[key] = osc;

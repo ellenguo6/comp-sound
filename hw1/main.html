@@ -3,6 +3,19 @@
   <head>
     <meta charset="utf-8" />
     <title>Hello web audio</title>
+
+    <style>
+      #imageContainer {
+        position: relative;
+        width: 100vw;
+        height: 80vh;
+      }
+
+      #displayedImg {
+        position: absolute;
+        width: 50px;
+      }
+    </style>
   </head>
 
   <body>
@@ -14,6 +27,10 @@
       <option value="sawtooth">sawtooth</option>
       <option value="square">square</option>
     </select>
+
+    <div id="imageContainer">
+      <img id="displayedImg" src="/img/image1.png" alt="Random Image" />
+    </div>
   </body>
 
   <script src="main.js"></script>
