@@ -1,38 +1,19 @@
 var audioCtx;
 
-const imageFiles = ["image1.png", "image2.png", "image3.png"];
-
 const waveformSelect = document.getElementById("waveformSelect");
 const applyButton = document.getElementById("applyButton");
 
 const globalGainValue = 0.6;
 const epsilon = 0.001;
 
-const attackTransition = 0.05;
+const attackTransition = 0.003;
 const attackTime = 0.01;
 const attackGain = 0.5;
 
-const decayTransition = 0.05;
+const decayTransition = 0.003;
 const sustainGain = 0.3;
 
 const releaseTransition = 0.1;
-
-function displayRandomImage() {
-  const randomIndex = Math.floor(Math.random() * imageFiles.length);
-  const randomImage = imageFiles[randomIndex];
-
-  const displayedImg = document.getElementById("displayedImg");
-  displayedImg.src = "img/" + randomImage;
-
-  const container = document.getElementById("imageContainer");
-  const maxWidth = container.clientWidth - displayedImg.width;
-  const maxHeight = container.clientHeight - displayedImg.height;
-  const randomX = Math.floor(Math.random() * maxWidth);
-  const randomY = Math.floor(Math.random() * maxHeight);
-
-  displayedImg.style.left = randomX + "px";
-  displayedImg.style.top = randomY + "px";
-}
 
 document.addEventListener("DOMContentLoaded", function (event) {
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -75,8 +56,9 @@ document.addEventListener("DOMContentLoaded", function (event) {
   function keyDown(event) {
     const key = (event.detail || event.which).toString();
     if (keyboardFrequencyMap[key] && !activeOscillators[key]) {
-      displayRandomImage();
       playNote(key);
+      totalVoices = Object.keys(activeOscillators).length;
+      createRandomImages(totalVoices);
     }
   }
 
@@ -130,3 +112,38 @@ document.addEventListener("DOMContentLoaded", function (event) {
     gainNodes[key] = gainNode;
   }
 });
+
+const n = 3;
+
+function getRandomNumber(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// Function to create and position random images
+function createRandomImages(m) {
+  const container = document.getElementById("imageContainer");
+
+  for (let i = 1; i <= m; i++) {
+    const img = document.createElement("img");
+    img.src = `img/image${getRandomNumber(1, n)}.png`;
+    img.classList.add("image");
+
+    // Set random position within the container
+    const x = getRandomNumber(0, container.clientWidth - 100);
+    const y = getRandomNumber(0, container.clientHeight - 100);
+    img.style.left = `${x}px`;
+    img.style.top = `${y}px`;
+
+    container.appendChild(img);
+  }
+}
+
+function clearImages() {
+  const container = document.getElementById("imageContainer");
+  while (container.firstChild) {
+    container.removeChild(container.firstChild);
+  }
+}
+
+const clearButton = document.getElementById("clearButton");
+clearButton.addEventListener("click", clearImages);

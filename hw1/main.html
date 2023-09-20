@@ -5,21 +5,41 @@
     <title>Hello web audio</title>
 
     <style>
-      #imageContainer {
-        position: relative;
-        width: 100vw;
-        height: 80vh;
+      body {
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
       }
 
-      #displayedImg {
+      .image-container {
+        flex-grow: 1;
+        width: 100%;
+        position: relative;
+      }
+
+      .image {
         position: absolute;
         width: 50px;
+      }
+
+      #waveformSelect {
+        width: 150px;
+      }
+
+      #button-container {
+        display: flex;
+        /* justify-content: center; */
+        align-items: center;
+        height: 50px;
       }
     </style>
   </head>
 
   <body>
-    <h1>lab 1: build your own keyboard</h1>
+    <h1>welcome to ellen's coop</h1>
+    <p>build a flock by playing some music :)</p>
 
     <label for="waveformSelect">select waveform:</label>
     <select id="waveformSelect">
@@ -28,9 +48,11 @@
       <option value="square">square</option>
     </select>
 
-    <div id="imageContainer">
-      <img id="displayedImg" src="/img/image1.png" alt="Random Image" />
+    <div id="button-container">
+      <button id="clearButton">clear chickens :(</button>
     </div>
+
+    <div class="image-container" id="imageContainer"></div>
   </body>
 
   <script src="main.js"></script>
