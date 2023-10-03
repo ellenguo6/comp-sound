@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
     // additive
     const numAdditiveOscillators =
-      synthType.value == "basic"
+      synthType.value != "additive"
         ? 0
         : parseInt(document.getElementById("slider").value);
     const additiveOscs = [];
@@ -102,8 +102,20 @@ document.addEventListener("DOMContentLoaded", function (event) {
       o.type = waveformSelect.value;
     }
 
-    let totalVoices = Object.keys(baseOscillators).length + 1;
+    // AM
+    if (synthType.value == "AM") {
+      var amModulator = audioCtx.createOscillator();
+      amModulator.frequency.value = parseInt(
+        document.getElementById("slider").value
+      );
+      const depth = audioCtx.createGain();
 
+      depth.gain.value = 0.5;
+
+      amModulator.connect(depth).connect(gainNode);
+    }
+
+    let totalVoices = Object.keys(baseOscillators).length + 1;
     for (const key in additiveOscillators) {
       if (additiveOscillators.hasOwnProperty(key)) {
         totalVoices += additiveOscillators[key].length;
@@ -123,9 +135,11 @@ document.addEventListener("DOMContentLoaded", function (event) {
     for (const o of additiveOscs) {
       o.start();
     }
+    if (amModulator) {
+      amModulator.start();
+    }
 
     gainNode.gain.setValueAtTime(epsilon, audioCtx.currentTime);
-
     gainNode.gain.setTargetAtTime(
       attackGain / totalVoices,
       audioCtx.currentTime,
@@ -180,39 +194,40 @@ clearButton.addEventListener("click", clearImages);
 
 synthType.addEventListener("change", function () {
   const selectedValue = synthType.value;
+
+  // Remove any previously added sliders and labels
+  sliderContainer.innerHTML = "";
+
   if (selectedValue === "additive") {
-    const label = document.createElement("label");
-    label.textContent = "Choose number of partials:";
-    sliderContainer.appendChild(label);
-
-    const slider = document.createElement("input");
-    slider.type = "range";
-    slider.min = 1;
-    slider.max = 10;
-    slider.value = 1;
-    slider.id = "slider";
-    sliderContainer.appendChild(slider);
-
-    const valueDisplay = document.createElement("span");
-    valueDisplay.id = "sliderValue";
-    valueDisplay.textContent = slider.value;
-    sliderContainer.appendChild(valueDisplay);
-
-    slider.addEventListener("input", function () {
-      valueDisplay.textContent = slider.value;
-    });
-  } else {
-    const slider = document.getElementById("slider");
-    if (slider) {
-      sliderContainer.removeChild(slider);
-    }
-    const label = document.querySelector("#sliderContainer > label");
-    if (label) {
-      sliderContainer.removeChild(label);
-    }
-    const valueDisplay = document.getElementById("sliderValue");
-    if (valueDisplay) {
-      sliderContainer.removeChild(valueDisplay);
-    }
+    createSlider("choose number of partials:", 1, 10);
+  } else if (selectedValue === "AM") {
+    createSlider("choose modulation frequency:", 0, 1000);
   }
 });
+
+function createSlider(labelText, minValue, maxValue) {
+  // Create and append a label for the slider
+  const label = document.createElement("label");
+  label.textContent = labelText;
+  sliderContainer.appendChild(label);
+
+  // Create and append a slider
+  const slider = document.createElement("input");
+  slider.type = "range";
+  slider.min = minValue;
+  slider.max = maxValue;
+  slider.value = minValue; // Initialize with min value
+  slider.id = "slider";
+  sliderContainer.appendChild(slider);
+
+  // Create and append a span element to display the selected value
+  const valueDisplay = document.createElement("span");
+  valueDisplay.id = "sliderValue";
+  valueDisplay.textContent = slider.value;
+  sliderContainer.appendChild(valueDisplay);
+
+  // Add an input event listener to update the value display
+  slider.addEventListener("input", function () {
+    valueDisplay.textContent = slider.value;
+  });
+}
