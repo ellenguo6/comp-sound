@@ -28,6 +28,10 @@
         width: 150px;
       }
 
+      #synthType {
+        width: 150px;
+      }
+
       #button-container {
         display: flex;
         /* justify-content: center; */
@@ -47,7 +51,17 @@
       <option value="sawtooth">sawtooth</option>
       <option value="square">square</option>
     </select>
+    <br />
 
+    <label for="synthType">select audio synthesis type:</label>
+    <select id="synthType">
+      <option value="basic">basic</option>
+      <option value="additive">additive</option>
+    </select>
+
+    <div id="sliderContainer"></div>
+
+    <br />
     <div id="button-container">
       <button id="clearButton">clear chickens :(</button>
     </div>

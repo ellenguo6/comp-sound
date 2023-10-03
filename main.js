@@ -1,17 +1,19 @@
 var audioCtx;
 
 const waveformSelect = document.getElementById("waveformSelect");
+const synthType = document.getElementById("synthType");
+const sliderContainer = document.getElementById("sliderContainer");
 const applyButton = document.getElementById("applyButton");
 
-const globalGainValue = 0.6;
+const globalGainValue = 0.5;
 const epsilon = 0.001;
 
 const attackTransition = 0.003;
 const attackTime = 0.01;
-const attackGain = 0.5;
+const attackGain = 0.4;
 
 const decayTransition = 0.003;
-const sustainGain = 0.3;
+const sustainGain = 0.2;
 
 const releaseTransition = 0.1;
 
@@ -87,7 +89,11 @@ document.addEventListener("DOMContentLoaded", function (event) {
     osc.type = waveformSelect.value;
     osc.start();
 
-    const numAdditiveOscillators = 3;
+    // additive
+    const numAdditiveOscillators =
+      synthType.value == "basic"
+        ? 0
+        : parseInt(document.getElementById("slider").value);
     const additiveOscs = [];
     for (let i = 0; i < numAdditiveOscillators; i++) {
       const o = audioCtx.createOscillator();
@@ -98,7 +104,20 @@ document.addEventListener("DOMContentLoaded", function (event) {
       o.start();
     }
 
-    const totalVoices = Object.keys(baseOscillators).length + 1;
+    let totalVoices = Object.keys(baseOscillators).length + 1;
+    console.log("base length: ", totalVoices);
+
+    for (const key in additiveOscillators) {
+      if (additiveOscillators.hasOwnProperty(key)) {
+        const array = additiveOscillators[key];
+        console.log("length: ", array.length);
+        totalVoices += array.length;
+      }
+    }
+    console.log("total Voices after for", totalVoices);
+    console.log("numAdditiveOscillators", numAdditiveOscillators);
+    totalVoices += numAdditiveOscillators;
+    console.log("total Voices", totalVoices);
 
     Object.values(gainNodes).forEach(function (gainNode) {
       gainNode.gain.setTargetAtTime(
@@ -122,7 +141,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
     );
 
     baseOscillators[key] = osc;
-    additiveOscs[key] = additiveOscs;
+    additiveOscillators[key] = additiveOscs;
     gainNodes[key] = gainNode;
   }
 });
@@ -161,3 +180,42 @@ function clearImages() {
 
 const clearButton = document.getElementById("clearButton");
 clearButton.addEventListener("click", clearImages);
+
+synthType.addEventListener("change", function () {
+  const selectedValue = synthType.value;
+  if (selectedValue === "additive") {
+    const label = document.createElement("label");
+    label.textContent = "Choose number of partials:";
+    sliderContainer.appendChild(label);
+
+    const slider = document.createElement("input");
+    slider.type = "range";
+    slider.min = 1;
+    slider.max = 10;
+    slider.value = 1;
+    slider.id = "slider";
+    sliderContainer.appendChild(slider);
+
+    const valueDisplay = document.createElement("span");
+    valueDisplay.id = "sliderValue";
+    valueDisplay.textContent = slider.value;
+    sliderContainer.appendChild(valueDisplay);
+
+    slider.addEventListener("input", function () {
+      valueDisplay.textContent = slider.value;
+    });
+  } else {
+    const slider = document.getElementById("slider");
+    if (slider) {
+      sliderContainer.removeChild(slider);
+    }
+    const label = document.querySelector("#sliderContainer > label");
+    if (label) {
+      sliderContainer.removeChild(label);
+    }
+    const valueDisplay = document.getElementById("sliderValue");
+    if (valueDisplay) {
+      sliderContainer.removeChild(valueDisplay);
+    }
+  }
+});
