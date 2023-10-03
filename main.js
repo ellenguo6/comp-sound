@@ -87,7 +87,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
       audioCtx.currentTime
     );
     osc.type = waveformSelect.value;
-    osc.start();
 
     // additive
     const numAdditiveOscillators =
@@ -101,23 +100,16 @@ document.addEventListener("DOMContentLoaded", function (event) {
       o.frequency.value = (i + 1) * keyboardFrequencyMap[key];
       o.connect(gainNode);
       o.type = waveformSelect.value;
-      o.start();
     }
 
     let totalVoices = Object.keys(baseOscillators).length + 1;
-    console.log("base length: ", totalVoices);
 
     for (const key in additiveOscillators) {
       if (additiveOscillators.hasOwnProperty(key)) {
-        const array = additiveOscillators[key];
-        console.log("length: ", array.length);
-        totalVoices += array.length;
+        totalVoices += additiveOscillators[key].length;
       }
     }
-    console.log("total Voices after for", totalVoices);
-    console.log("numAdditiveOscillators", numAdditiveOscillators);
     totalVoices += numAdditiveOscillators;
-    console.log("total Voices", totalVoices);
 
     Object.values(gainNodes).forEach(function (gainNode) {
       gainNode.gain.setTargetAtTime(
@@ -126,6 +118,11 @@ document.addEventListener("DOMContentLoaded", function (event) {
         epsilon
       );
     });
+
+    osc.start();
+    for (const o of additiveOscs) {
+      o.start();
+    }
 
     gainNode.gain.setValueAtTime(epsilon, audioCtx.currentTime);
 
