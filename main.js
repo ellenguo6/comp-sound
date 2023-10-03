@@ -5,15 +5,15 @@ const synthType = document.getElementById("synthType");
 const sliderContainer = document.getElementById("sliderContainer");
 const applyButton = document.getElementById("applyButton");
 
-const globalGainValue = 0.5;
+const globalGainValue = 0.6;
 const epsilon = 0.001;
 
 const attackTransition = 0.003;
 const attackTime = 0.01;
-const attackGain = 0.4;
+const attackGain = 0.5;
 
 const decayTransition = 0.003;
-const sustainGain = 0.2;
+const sustainGain = 0.3;
 
 const releaseTransition = 0.1;
 
@@ -87,7 +87,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
     const osc = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
 
-    osc.connect(gainNode).connect(globalGain);
+    gainNode.connect(globalGain);
+
     osc.frequency.setValueAtTime(
       keyboardFrequencyMap[key],
       audioCtx.currentTime
@@ -130,12 +131,19 @@ document.addEventListener("DOMContentLoaded", function (event) {
       amModulator.frequency.value = parseInt(
         document.getElementById("slider").value
       );
+      const modulated = audioCtx.createGain();
       const depth = audioCtx.createGain();
 
-      depth.gain.value = 0.5;
+      depth.gain.value = 0.5; //scale modulator output to [-0.5, 0.5]
+      modulated.gain.value = 1.0 - depth.gain.value; //a fixed value of 0.5
 
-      amModulator.connect(depth).connect(gainNode);
+      amModulator.connect(depth).connect(modulated.gain);
+      osc.connect(modulated);
+      modulated.connect(gainNode);
+
       totalVoices += 1;
+    } else {
+      osc.connect(gainNode);
     }
 
     // FM
