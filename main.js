@@ -190,7 +190,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
   }
 });
 
-const n = 3;
+const n = 7;
 
 function getRandomNumber(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
