@@ -114,6 +114,19 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
       amModulator.connect(depth).connect(gainNode);
     }
+    // TODO: new dictionary, make sure total voices is updated as well
+
+    // FM
+    if (synthType.value == "FM") {
+      var fmModulator = audioCtx.createOscillator();
+
+      modulationIndex = audioCtx.createGain();
+      modulationIndex.gain.value = 100;
+      fmModulator.frequency.value = 100;
+
+      fmModulator.connect(modulationIndex);
+      modulationIndex.connect(osc.frequency);
+    }
 
     let totalVoices = Object.keys(baseOscillators).length + 1;
     for (const key in additiveOscillators) {
@@ -137,6 +150,9 @@ document.addEventListener("DOMContentLoaded", function (event) {
     }
     if (amModulator) {
       amModulator.start();
+    }
+    if (fmModulator) {
+      fmModulator.start();
     }
 
     gainNode.gain.setValueAtTime(epsilon, audioCtx.currentTime);
