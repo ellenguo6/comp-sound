@@ -53,6 +53,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
   globalGain.connect(audioCtx.destination);
 
   baseOscillators = {};
+  lfoOscillators = {};
   additiveOscillators = {};
   amOscillators = {};
   fmOscillators = {};
@@ -74,6 +75,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
       gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, releaseTransition);
 
       delete baseOscillators[key];
+      delete lfoOscillators[key];
       delete additiveOscillators[key];
       delete amOscillators[key];
       delete fmOscillators[key];
@@ -92,6 +94,18 @@ document.addEventListener("DOMContentLoaded", function (event) {
     );
     osc.type = waveformSelect.value;
 
+    let totalVoices = 1;
+
+    let lfo;
+    if (synthType.value == "lfo") {
+      lfo = audioCtx.createOscillator();
+      lfo.frequency.value = 0.5;
+      lfoGain = audioCtx.createGain();
+      lfoGain.gain.value = 8;
+      lfo.connect(lfoGain).connect(osc.frequency);
+      totalVoices += 1;
+    }
+
     // additive
     let additiveOscs = [];
     if (synthType.value == "additive") {
@@ -105,10 +119,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
         o.connect(gainNode);
         o.type = waveformSelect.value;
       }
+      totalVoices += numAdditiveOscillators;
     }
 
     // AM
-    let totalVoices = 1;
     let amModulator;
     if (synthType.value == "AM") {
       amModulator = audioCtx.createOscillator();
@@ -149,7 +163,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
         totalVoices += additiveOscillators[key].length;
       }
     }
-    totalVoices += additiveOscs.length;
 
     Object.values(gainNodes).forEach(function (gainNode) {
       gainNode.gain.setTargetAtTime(
@@ -170,6 +183,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
     if (fmModulator !== undefined) {
       fmModulator.start();
       fmOscillators[key] = fmModulator;
+    }
+    if (lfo !== undefined) {
+      lfo.start();
+      lfoOscillators[key] = lfo;
     }
 
     gainNode.gain.setValueAtTime(epsilon, audioCtx.currentTime);
