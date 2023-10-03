@@ -115,7 +115,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
       for (let i = 0; i < numAdditiveOscillators; i++) {
         const o = audioCtx.createOscillator();
         additiveOscs.push(o);
-        o.frequency.value = (i + 1) * keyboardFrequencyMap[key];
+        o.frequency.value =
+          (i + 1) * keyboardFrequencyMap[key] + Math.random() * 15;
         o.connect(gainNode);
         o.type = waveformSelect.value;
       }
