@@ -50,25 +50,27 @@ document.addEventListener("DOMContentLoaded", function (event) {
   globalGain.gain.setValueAtTime(globalGainValue, audioCtx.currentTime);
   globalGain.connect(audioCtx.destination);
 
-  activeOscillators = {};
+  baseOscillators = {};
+  additiveOscillators = {};
   gainNodes = {};
 
   function keyDown(event) {
     const key = (event.detail || event.which).toString();
-    if (keyboardFrequencyMap[key] && !activeOscillators[key]) {
+    if (keyboardFrequencyMap[key] && !baseOscillators[key]) {
       playNote(key);
-      totalVoices = Object.keys(activeOscillators).length;
+      totalVoices = Object.keys(baseOscillators).length;
       createRandomImages(totalVoices);
     }
   }
 
   function keyUp(event) {
     const key = (event.detail || event.which).toString();
-    if (keyboardFrequencyMap[key] && activeOscillators[key]) {
+    if (keyboardFrequencyMap[key] && baseOscillators[key]) {
       gainNode = gainNodes[key];
       gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, releaseTransition);
 
-      delete activeOscillators[key];
+      delete baseOscillators[key];
+      delete additiveOscillators[key];
       delete gainNodes[key];
     }
   }
@@ -77,7 +79,26 @@ document.addEventListener("DOMContentLoaded", function (event) {
     const osc = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
 
-    const totalVoices = Object.keys(activeOscillators).length + 1;
+    osc.connect(gainNode).connect(globalGain);
+    osc.frequency.setValueAtTime(
+      keyboardFrequencyMap[key],
+      audioCtx.currentTime
+    );
+    osc.type = waveformSelect.value;
+    osc.start();
+
+    const numAdditiveOscillators = 3;
+    const additiveOscs = [];
+    for (let i = 0; i < numAdditiveOscillators; i++) {
+      const o = audioCtx.createOscillator();
+      additiveOscs.push(o);
+      o.frequency.value = (i + 1) * keyboardFrequencyMap[key];
+      o.connect(gainNode);
+      o.type = waveformSelect.value;
+      o.start();
+    }
+
+    const totalVoices = Object.keys(baseOscillators).length + 1;
 
     Object.values(gainNodes).forEach(function (gainNode) {
       gainNode.gain.setTargetAtTime(
@@ -86,14 +107,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
         epsilon
       );
     });
-
-    osc.connect(gainNode).connect(globalGain);
-    osc.frequency.setValueAtTime(
-      keyboardFrequencyMap[key],
-      audioCtx.currentTime
-    );
-    osc.type = waveformSelect.value; //choose your favorite waveform
-    osc.start();
 
     gainNode.gain.setValueAtTime(epsilon, audioCtx.currentTime);
 
@@ -108,7 +121,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
       decayTransition
     );
 
-    activeOscillators[key] = osc;
+    baseOscillators[key] = osc;
+    additiveOscs[key] = additiveOscs;
     gainNodes[key] = gainNode;
   }
 });
