@@ -54,6 +54,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
   baseOscillators = {};
   additiveOscillators = {};
+  amOscillators = {};
+  fmOscillators = {};
   gainNodes = {};
 
   function keyDown(event) {
@@ -73,6 +75,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
       delete baseOscillators[key];
       delete additiveOscillators[key];
+      delete amOscillators[key];
+      delete fmOscillators[key];
       delete gainNodes[key];
     }
   }
@@ -89,22 +93,25 @@ document.addEventListener("DOMContentLoaded", function (event) {
     osc.type = waveformSelect.value;
 
     // additive
-    const numAdditiveOscillators =
-      synthType.value != "additive"
-        ? 0
-        : parseInt(document.getElementById("slider").value);
-    const additiveOscs = [];
-    for (let i = 0; i < numAdditiveOscillators; i++) {
-      const o = audioCtx.createOscillator();
-      additiveOscs.push(o);
-      o.frequency.value = (i + 1) * keyboardFrequencyMap[key];
-      o.connect(gainNode);
-      o.type = waveformSelect.value;
+    let additiveOscs = [];
+    if (synthType.value == "additive") {
+      const numAdditiveOscillators = parseInt(
+        document.getElementById("slider").value
+      );
+      for (let i = 0; i < numAdditiveOscillators; i++) {
+        const o = audioCtx.createOscillator();
+        additiveOscs.push(o);
+        o.frequency.value = (i + 1) * keyboardFrequencyMap[key];
+        o.connect(gainNode);
+        o.type = waveformSelect.value;
+      }
     }
 
     // AM
+    let totalVoices = 1;
+    let amModulator;
     if (synthType.value == "AM") {
-      var amModulator = audioCtx.createOscillator();
+      amModulator = audioCtx.createOscillator();
       amModulator.frequency.value = parseInt(
         document.getElementById("slider").value
       );
@@ -113,28 +120,36 @@ document.addEventListener("DOMContentLoaded", function (event) {
       depth.gain.value = 0.5;
 
       amModulator.connect(depth).connect(gainNode);
+      totalVoices += 1;
     }
-    // TODO: new dictionary, make sure total voices is updated as well
 
     // FM
+    let fmModulator;
     if (synthType.value == "FM") {
-      var fmModulator = audioCtx.createOscillator();
+      fmModulator = audioCtx.createOscillator();
 
       modulationIndex = audioCtx.createGain();
-      modulationIndex.gain.value = 100;
-      fmModulator.frequency.value = 100;
+      modulationIndex.gain.value = parseInt(
+        document.getElementById("modIndexSlider").value
+      );
+      fmModulator.frequency.value = parseInt(
+        document.getElementById("modFreqSlider").value
+      );
 
       fmModulator.connect(modulationIndex);
       modulationIndex.connect(osc.frequency);
+      totalVoices += 2;
     }
 
-    let totalVoices = Object.keys(baseOscillators).length + 1;
+    totalVoices += Object.keys(baseOscillators).length;
+    totalVoices += Object.keys(amOscillators).length;
+    totalVoices += Object.keys(fmOscillators).length;
     for (const key in additiveOscillators) {
       if (additiveOscillators.hasOwnProperty(key)) {
         totalVoices += additiveOscillators[key].length;
       }
     }
-    totalVoices += numAdditiveOscillators;
+    totalVoices += additiveOscs.length;
 
     Object.values(gainNodes).forEach(function (gainNode) {
       gainNode.gain.setTargetAtTime(
@@ -148,11 +163,13 @@ document.addEventListener("DOMContentLoaded", function (event) {
     for (const o of additiveOscs) {
       o.start();
     }
-    if (amModulator) {
+    if (amModulator !== undefined) {
       amModulator.start();
+      amOscillators[key] = amModulator;
     }
-    if (fmModulator) {
+    if (fmModulator !== undefined) {
       fmModulator.start();
+      fmOscillators[key] = fmModulator;
     }
 
     gainNode.gain.setValueAtTime(epsilon, audioCtx.currentTime);
@@ -215,13 +232,17 @@ synthType.addEventListener("change", function () {
   sliderContainer.innerHTML = "";
 
   if (selectedValue === "additive") {
-    createSlider("choose number of partials:", 1, 10);
+    createSlider("choose number of partials:", "slider", 1, 10);
   } else if (selectedValue === "AM") {
-    createSlider("choose modulation frequency:", 0, 1000);
+    createSlider("choose modulation frequency:", "slider", 1, 1000);
+  } else if (selectedValue === "FM") {
+    createSlider("Choose modulator frequency:", "modFreqSlider", 1, 1000);
+    sliderContainer.appendChild(document.createElement("br"));
+    createSlider("Choose index of modulation:", "modIndexSlider", 1, 1000);
   }
 });
 
-function createSlider(labelText, minValue, maxValue) {
+function createSlider(labelText, id, minValue, maxValue) {
   // Create and append a label for the slider
   const label = document.createElement("label");
   label.textContent = labelText;
@@ -233,7 +254,7 @@ function createSlider(labelText, minValue, maxValue) {
   slider.min = minValue;
   slider.max = maxValue;
   slider.value = minValue; // Initialize with min value
-  slider.id = "slider";
+  slider.id = id;
   sliderContainer.appendChild(slider);
 
   // Create and append a span element to display the selected value
