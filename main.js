@@ -100,6 +100,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
     let lfo;
     if (synthType.value == "lfo") {
       lfo = audioCtx.createOscillator();
+      lfo.type = waveformSelect.value;
       lfo.frequency.value = 0.5;
       lfoGain = audioCtx.createGain();
       lfoGain.gain.value = 8;
@@ -128,6 +129,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
     let amModulator;
     if (synthType.value == "AM") {
       amModulator = audioCtx.createOscillator();
+      amModulator.type = waveformSelect.value;
       amModulator.frequency.value = parseInt(
         document.getElementById("slider").value
       );
@@ -150,6 +152,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
     let fmModulator;
     if (synthType.value == "FM") {
       fmModulator = audioCtx.createOscillator();
+      fmModulator.type = waveformSelect.value;
 
       modulationIndex = audioCtx.createGain();
       modulationIndex.gain.value = parseInt(
