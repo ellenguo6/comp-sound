@@ -27,7 +27,11 @@ startButton.addEventListener(
 );
 
 soundType.addEventListener("change", function () {
-  startButton.textContent = "add ball";
+  if (document.getElementById("sound").value == "babblingCreek") {
+    startButton.textContent = "play/pause";
+  } else {
+    startButton.textContent = "add ball";
+  }
 });
 
 let createBrownNoise = function (actx) {
