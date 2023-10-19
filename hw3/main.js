@@ -5,6 +5,7 @@ var noiseEnv;
 var feedbackDelay;
 const epsilon = 0.001;
 const startButton = document.getElementById("startButton");
+const soundType = document.getElementById("sound");
 
 startButton.addEventListener(
   "click",
@@ -19,12 +20,15 @@ startButton.addEventListener(
       }
     } else {
       initSound();
-      startButton.textContent = "add ball";
     }
     return;
   },
   false
 );
+
+soundType.addEventListener("change", function () {
+  startButton.textContent = "add ball";
+});
 
 let createBrownNoise = function (actx) {
   var bufferSize = 10 * actx.sampleRate,
