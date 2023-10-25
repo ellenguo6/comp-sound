@@ -5,7 +5,13 @@ var noiseEnv;
 var feedbackDelay;
 const epsilon = 0.001;
 const startButton = document.getElementById("startButton");
+const text = document.getElementById("text");
+const blog = document.getElementById("blog");
 const soundType = document.getElementById("sound");
+
+document.addEventListener("DOMContentLoaded", function (event) {
+  blog.style.display = "none";
+});
 
 startButton.addEventListener(
   "click",
@@ -29,8 +35,12 @@ startButton.addEventListener(
 soundType.addEventListener("change", function () {
   if (document.getElementById("sound").value == "babblingCreek") {
     startButton.textContent = "play/pause";
+    blog.style.display = "none";
+    text.style.display = "block";
   } else {
     startButton.textContent = "add ball";
+    blog.style.display = "block";
+    text.style.display = "none";
   }
 });
 
