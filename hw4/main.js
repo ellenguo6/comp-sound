@@ -48,6 +48,17 @@ function scheduleAudio() {
         audioCtx.currentTime + timeElapsedSecs,
         0.01
       );
+    } else {
+      fmModulationIndex.gain.setTargetAtTime(
+        0,
+        audioCtx.currentTime + timeElapsedSecs,
+        0.01
+      );
+      fmModulator.frequency.setTargetAtTime(
+        noteData["pitch"],
+        audioCtx.currentTime + timeElapsedSecs,
+        0.01
+      );
     }
     timeElapsedSecs += noteData["length"] / 10.0;
     timings.gain.setTargetAtTime(
