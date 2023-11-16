@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf‐8" />
+    <title>Hello web audio</title>
+
+    <!-- <style>
+      #inputBox {
+        width: 400px;
+        height: 100px;
+      }
+    </style> -->
+  </head>
+
+  <body>
+    <h2>minimal command-based live coding engine</h2>
+    <p>
+      how this works:
+      <li>separate beats with spaces</li>
+      <li>
+        for each beat, specify [<i>length</i>]@[<i>pitch</i>]. <i>length</i> and
+        <i>pitch</i> can be javascript computation values
+      </li>
+      <li>
+        if you want to optionally do FM modulation, add
+        <i>f[modulationIndex],[modulationFrequency]</i> after the pitch
+      </li>
+      <br />
+      for example: 1+1@220 2@220*2f200,220*3 1*3@270
+      <br /><br />press the button to re-evaluate the code.
+    </p>
+
+    <textarea id="code" rows="4" cols="50"></textarea></br></br>
+    <button>re-evaluate</button>
+  </body>
+  <script src="main.js"></script>
+</html>
